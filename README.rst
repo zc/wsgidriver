@@ -8,14 +8,47 @@ using Python, Selenium Webdriver, Manuel, and bobo.
 
   - Sets up a webdriver, available as a ``browser`` variable.
 
-    Currently, only Chrome is supported.  Support for other drivers
-    coming soon.
+    By default, a Chrome browser driver is used.  You can override this
+    in two ways:
+
+    1. Define a driver in a ``SELENIUM_DRIVER`` environment variable,
+       or
+
+    2. In your test script, call the function
+       ``zc.bobodriver.get_factory_argument(argv=sys.argv, option='-b')``
+       to parse arguments for a
+       ``-b`` option, typically before calling whatever logic normally
+       parses arguments.
+
+       The value of this option is a driver definition.
+
+    A driver definition can be one of the driver names, ``chrome``
+    ``firefox``, ``ie``, ``opera``, or ``phantomjs``.  It can also be
+    a remote driver specification.  A remote driver specification is
+    of the form::
+
+      browserName,version,platform,command_executor
+
+    For example:
+
+      internet explorer,10,Windows 8
+
+    Items on the right can be ommitted.  In the example above, we've
+    left off the command executor.  If the command executor isn't
+    provided as part of the option, it must be provided via the
+    ``SELENIUM_REMOTE_COMMAND_EXECUTOR`` environment variable.
+
+    Note that to use firefox as a remote browser without specifying
+    anything else, you'll need to supply a trailing comma to prevent
+    it from being treated as a name.
 
   - Sets up a bobo server, to serve static files and application or
     testing resources.  By default, this runs on a dynamically
     assigned port.  The address is available in the variable ``server``
+
   - Sets up a ``JS`` function for evaluating Javascript code on the
     browser.
+
   - Includes the ``wait`` function ``from zope.testing.wait`` that
     waits for a condition.
 

@@ -6,6 +6,7 @@ import manuel.doctest
 import os
 import re
 import selenium.webdriver
+import socket
 import sys
 import threading
 import time
@@ -16,10 +17,76 @@ import zope.testing.wait
 
 here = os.path.dirname(__file__)
 
+remote_name = 'bobodriver'
+driver_factory = None
+basic_factories = dict(
+    chrome = selenium.webdriver.Chrome,
+    ie = selenium.webdriver.Ie,
+    opera = selenium.webdriver.Opera,
+    phantomjs = selenium.webdriver.PhantomJS,
+    firefox = selenium.webdriver.Firefox,
+    )
+
+def remote(platform, browserName, version, executor):
+    def factory():
+        return selenium.webdriver.Remote(
+            desired_capabilities = dict(
+                browserName=browserName,
+                platform=platform,
+                version=version,
+                javascriptEnabled=True,
+                name=remote_name,
+                ),
+            command_executor=executor,
+            )
+    return factory
+
+def driver_factory_from_string(browser):
+    driver_factory = basic_factories.get(browser)
+    if driver_factory is None:
+        browser = browser.split(',')
+        browserName = browser.pop(0)
+        version = ''
+        platform = 'ANY'
+        executor = None
+        if browser:
+            version = browser.pop(0)
+            if browser:
+                platform = browser.pop()
+                if browser:
+                    [executor] = browser
+        if not executor:
+            executor = os.environ['SELENIUM_REMOTE_COMMAND_EXECUTOR']
+
+        driver_factory = remote(
+            platform, browserName, version, executor)
+
+def get_factory_argument(argv=sys.argv, option='-b'):
+    global driver_factory
+    i = 1
+    while i < len(argv):
+        if argv[i].startswith(option):
+            browser = argv.pop(i)[len(option):]
+            if not browser:
+                browser = argv.pop(i)
+            driver_factory_from_string(browser)
+            break
+        i += 1
+
 def setUp(test, resources):
     if not isinstance(resources, basestring):
         resources = '\n'.join(_resource(r) for r in resources)
-    browser = selenium.webdriver.Chrome()
+
+    global driver_factory
+    if driver_factory is None:
+        browser = os.environ.get("SELENIUM_DRIVER")
+        if browser:
+            driver_factory_from_string(browser)
+        else:
+            driver_factory = selenium.webdriver.Chrome
+
+    browser = driver_factory()
+
     zope.testing.setupstack.register(test, browser.quit)
     port = start_bobo_server(resources)
     server = 'http://localhost:%s/' % port
@@ -46,8 +113,20 @@ def start_bobo_server(resources, port=0, daemon=True):
     if not isinstance(resources, basestring):
         resources = '\n'.join(_resource(r) for r in resources)
     app = bobo.Application(bobo_resources=resources)
-    server = wsgiref.simple_server.make_server('', port, app,
-        handler_class=RequestHandler)
+
+    if port == 0:
+        for port in range(8000, 9000):
+            # We don't use ephemeral ports because windows clients, at
+            # least in sauce labs, can't seem to use them, so we have
+            # to do this the hard way.
+            try:
+                server = wsgiref.simple_server.make_server(
+                    '', port, app, handler_class=RequestHandler)
+            except socket.error:
+                if port == 8999:
+                    raise # dang, ran out of ports
+            else:
+                break
 
     @bobo.query("/stop")
     def stop():
@@ -67,7 +146,7 @@ def start_bobo_server(resources, port=0, daemon=True):
         thread.setDaemon(daemon)
         thread.start()
 
-    return server.server_port
+    return port
 
 def _resource(r):
     if '=' in r:
