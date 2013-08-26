@@ -1,6 +1,7 @@
 import bobo
 import boboserver
 import doctest
+import manuel.testing
 import manuel.capture
 import manuel.doctest
 import os
@@ -42,6 +43,7 @@ def remote(platform, browserName, version, executor):
     return factory
 
 def driver_factory_from_string(browser):
+    global driver_factory
     driver_factory = basic_factories.get(browser)
     if driver_factory is None:
         browser = browser.split(',')
@@ -73,10 +75,7 @@ def get_factory_argument(argv=sys.argv, option='-b'):
             break
         i += 1
 
-def setUp(test, resources):
-    if not isinstance(resources, basestring):
-        resources = '\n'.join(_resource(r) for r in resources)
-
+def setUp(test, app):
     global driver_factory
     if driver_factory is None:
         browser = os.environ.get("SELENIUM_DRIVER")
@@ -88,17 +87,20 @@ def setUp(test, resources):
     browser = driver_factory()
 
     zope.testing.setupstack.register(test, browser.quit)
-    port = start_bobo_server(resources)
+    port = start_server(app)
     server = 'http://localhost:%s/' % port
     zope.testing.setupstack.register(
-        test, lambda : browser.get(server + 'stop'))
+        test, lambda : browser.get(server + 'stop-testing-server'))
 
     test.globs.update(
         port = port,
         server = server,
         browser = browser
         )
-    test.globs['JS'] = browser.execute_script
+    test.globs['JS_'] = browser.execute_script
+    def JS(src):
+        return browser.execute_script('return '+src.strip())
+    test.globs['JS'] = JS
     test.globs['wait'] = zope.testing.wait.wait
 
 
@@ -109,10 +111,21 @@ class RequestHandler(wsgiref.simple_server.WSGIRequestHandler):
     def log_request(self, *args):
         pass
 
-def start_bobo_server(resources, port=0, daemon=True):
-    if not isinstance(resources, basestring):
-        resources = '\n'.join(_resource(r) for r in resources)
-    app = bobo.Application(bobo_resources=resources)
+def start_server(app, port=0, daemon=True):
+
+    def app_wrapper(environ, start_response):
+        if environ.get('PATH_INFO') == '/stop-testing-server':
+            thread = threading.Thread(target=server.shutdown)
+            thread.setDaemon(True)
+            thread.start()
+            start_response(
+                "200 OK",
+                [('Content-Type', 'text/plain'),
+                 ('Content-Length', '0'),
+                 ])
+            return ''
+        else:
+            return app(environ, start_response)
 
     if port == 0:
         for port in range(8000, 9000):
@@ -121,21 +134,12 @@ def start_bobo_server(resources, port=0, daemon=True):
             # to do this the hard way.
             try:
                 server = wsgiref.simple_server.make_server(
-                    '', port, app, handler_class=RequestHandler)
+                    '', port, app_wrapper, handler_class=RequestHandler)
             except socket.error:
                 if port == 8999:
                     raise # dang, ran out of ports
             else:
                 break
-
-    @bobo.query("/stop")
-    def stop():
-        thread = threading.Thread(target=server.shutdown)
-        thread.setDaemon(True)
-        thread.start()
-        return ''
-
-    app.handlers.append(stop.bobo_response)
 
     if daemon is None:
         import logging
@@ -147,18 +151,6 @@ def start_bobo_server(resources, port=0, daemon=True):
         thread.start()
 
     return port
-
-def _resource(r):
-    if '=' in r:
-        route, path = r.split('=')
-        if not os.path.isabs(path):
-            path = os.path.join(
-                os.path.dirname(sys._getframe(3).f_globals['__file__']),
-                path,
-                )
-            return 'boboserver:static(%r, %r)' % (route, path)
-    else:
-        return r
 
 def html(css=(), scripts=(), title="test", body="<body></body>"):
     return blank_html_template % dict(
@@ -200,12 +192,26 @@ script_template = """
   </script>
 """
 
-def manuels(optionflags):
+def manuels(optionflags=0, checker=None):
     return (
         manuel.doctest.Manuel(parser=zc.customdoctests.js.parser,
                               optionflags=optionflags) +
         manuel.doctest.Manuel(parser=zc.customdoctests.js.eq_parser,
                               optionflags=optionflags) +
-        manuel.doctest.Manuel(optionflags=optionflags) +
+        manuel.doctest.Manuel(optionflags=optionflags, checker=checker) +
         manuel.capture.Manuel()
         )
+
+def _manuels(optionflags=0, checker=None, **kw):
+    return manuels(optionflags, checker), kw
+
+def TestSuite(*a, **kw):
+    manuels, kw = _manuels(**kw)
+
+    if 'app' in kw:
+        if 'setUp' in kw or 'tearDown' in kw:
+            raise TypeError("Can't pass setUp or tearDown if you pass app")
+        app = kw.pop('app')
+        kw['setUp'] = lambda test: setUp(test, app)
+        kw['tearDown'] = tearDown
+    return manuel.testing.TestSuite(manuels, *a, **kw)

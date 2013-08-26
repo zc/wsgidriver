@@ -1,10 +1,11 @@
-Bobo+Webdriver for testing Javascript (and optionally bobo) UIs
+WSGI+Webdriver for testing Javascript (and optionally WSGI) UIs
 ***************************************************************
 
-This package provides some helpers for testing Javascript applications
-using Python, Selenium Webdriver, Manuel, and bobo.
+This package provides some helpers for testing Javascript (and
+optionally WSGI) applications using Python, Selenium Webdriver,
+Manuel, and WSGI.
 
-- ``doctest`` setUp function that:
+- doctest ``setUp`` function that:
 
   - Sets up a webdriver, available as a ``browser`` variable.
 
@@ -42,33 +43,37 @@ using Python, Selenium Webdriver, Manuel, and bobo.
     anything else, you'll need to supply a trailing comma to prevent
     it from being treated as a name.
 
-  - Sets up a bobo server, to serve static files and application or
-    testing resources.  By default, this runs on a dynamically
-    assigned port.  The address is available in the variable ``server``
+  - Sets up a server to serve a WSGI application.
 
-  - Sets up a ``JS`` function for evaluating Javascript code on the
-    browser.
+  - Sets up 2 flavors of Javascript doctest examples:
+
+    ``js>`` examples
+        for evaluating Javascript expressions in the browser.
+
+    ``js!`` examples
+        for executing Javascript code in the browser without returning
+        anything.
+
+    These are doctest syntactic sugar for the Webdriver
+    ``execute_script`` function.
 
   - Includes the ``wait`` function ``from zope.testing.wait`` that
     waits for a condition.
 
-  The function takes a bobo resources definition as a string, or as a
-  tuble of strings.  In the later case, the values in the tuple are
-  either module names, or static file definitions of the form
-  ``"route=path"``.  If the path is relative, then it's determined
-  from the location of the calling function.
+  The function takes an additional argument (after the test argument),
+  named ``app`` that provides a WSGI application object.
 
-- A ``start_bobo_server`` function that can be used to run the test
+- A ``start_server`` function that can be used to run the test
   server without running tests.
 
-  start_bobo_server(resources, port=0, daemon=True)
+  start_server(app, port=0, daemon=True)
 
     Start a bobo server.
 
     Arguments:
 
-    resources
-       Resource definitions as a string or tuple as described above.
+    app
+       A WSGI application object
 
     port
        The port to listen on. If 0, the default, then the port so
@@ -115,9 +120,17 @@ using Python, Selenium Webdriver, Manuel, and bobo.
   combining Python and Javascript syntax doctest parsers and a capture
   parser.
 
-  manuels(optionflags)
+  manuels(optionflags=0, checker=None)
     Return a ``manuel`` parser for Python, Javascript and capture.
 
+- A ``TestSuite`` function that takes one or more doctest/manuel file names
+  and Test flags, such as ``setUp``, ``tearDown``, ``optionflags``,
+  and ``checker``, and returns a doctest test suite.
+
+  You can pass an ``app`` keyword argument, rather than passing
+  ``setUp`` and ``tearDown``.
+
+See the example test included with the package.
 
 Changes
 *******

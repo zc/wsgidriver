@@ -11,10 +11,11 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-name, version = 'zc.bobodriver', '0'
+name, version = 'zc.wsgidriver', '0'
 
-install_requires = ['setuptools', 'manuel', 'mock', 'zope.testing',
-                    'bobo', 'selenium', 'zc.customdoctests']
+install_requires = ['setuptools', 'manuel', 'zope.testing',
+                    'selenium', 'zc.customdoctests']
+extras_require = dict(test=['bobo', 'zope.testing'])
 
 entry_points = """
 """
@@ -31,7 +32,7 @@ setup(
     name = name, version = version,
     long_description=long_description,
     description = long_description.strip().split('\n')[0],
-    packages = ['zc'],
+    packages = ['zc', name],
     namespace_packages = [name.split('.')[0]],
     package_dir = {'': 'src'},
     install_requires = install_requires,
