@@ -36,7 +36,9 @@ of JS code::
     ... }
 
 Note that we defined a (global) variable here, rather than using a
-function statement. This is due to some selenium details::
+function statement. This is due to some selenium details.
+
+Now we can evaluate the function defined above::
 
     js> wsgidriver_f()
     4
