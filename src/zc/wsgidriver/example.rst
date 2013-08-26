@@ -1,7 +1,7 @@
-This is a somewhat silly sampel test that goes with the somewhat silly
+This is a somewhat silly sample test that goes with the somewhat silly
 test app.
 
-It gives a simple example of using the testing infrastructure.
+It gives a simple example of using the testing infrastructure::
 
     >>> browser.get(server)
     >>> print browser.page_source
@@ -29,14 +29,14 @@ It gives a simple example of using the testing infrastructure.
     [1, 2, 3]
 
 Use js! when you don't want to return a value.  And when doing a block
-of JS code.
+of JS code::
 
     js! wsgidriver_f = function() {
     ...     return 4;
     ... }
 
 Note that we defined a (global) variable here, rather than using a
-function statement. This is due to some selenium details.
+function statement. This is due to some selenium details::
 
     js> wsgidriver_f()
     4
@@ -49,7 +49,7 @@ We can also use ``browser.execute_script`` function to execute a block of code::
 
 .. -> src
 
-With the above block in ``src``
+With the above block in ``src``::
 
     >>> browser.execute_script(src)
 
