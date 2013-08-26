@@ -43,7 +43,8 @@ Now we can evaluate the function defined above::
     js> wsgidriver_f()
     4
 
-We can also use ``browser.execute_script`` function to execute a block of code::
+We can also use ``browser.execute_script`` function to execute a block
+of Javascript code from Python::
 
     wsgidriver_g = function() {
         return 5;
