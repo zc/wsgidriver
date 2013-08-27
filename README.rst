@@ -5,7 +5,7 @@ This package provides some helpers for testing Javascript (and
 optionally WSGI) applications using Python, Selenium Webdriver,
 Manuel, and WSGI.
 
-The package provides thge following functions:
+The package provides the following functions:
 
 ``setUp(test, app)``
   a doctest ``setUp`` function that:
@@ -40,7 +40,7 @@ The package provides thge following functions:
 
       internet explorer,10,Windows 8
 
-    Items on the right can be ommitted.  In the example above, we've
+    Items on the right can be omitted.  In the example above, we've
     left off the command executor.  If the command executor isn't
     provided as part of the option, it must be provided via the
     ``SELENIUM_REMOTE_COMMAND_EXECUTOR`` environment variable.
@@ -80,8 +80,8 @@ The package provides thge following functions:
     invoking Javascript this way, be aware of the following oddities:
 
     - Functions defined via ``function`` statements can be used within
-      the block of code, but aren't gloval.  To define a global
-      function, assign an anonymouse function to a global variable.
+      the block of code, but aren't global.  To define a global
+      function, assign an anonymous function to a global variable.
 
     - No value is returned unless the block of code includes a return
       statement.
@@ -101,17 +101,17 @@ The package provides thge following functions:
      A WSGI application object
 
   ``port``
-     The port to listen on. If 0, the default, then the port so
+     The port to listen on. If 0, the default, then the port is
      allocated dynamically and returned.
 
   ``daemon``
      The daemon mode.  This can be ``True``, ``False``, or ``None``.
 
-     If ``None``, then the server is run in the foureground and blocks
+     If ``None``, then the server is run in the foreground and blocks
      the caller.
 
-     If ``True`` or ``False``, the server is run in a thread, who's
-     deamon mode is set to the value of this parameter.
+     If ``True`` or ``False``, the server is run in a thread, whose
+     daemon mode is set to the value of this parameter.
 
 
 ``html(css=(), scripts=(), title="test", body="<body></body>")``
@@ -140,7 +140,7 @@ The package provides thge following functions:
       The contents of the page title
 
    ``body``
-      The body of teh document.
+      The body of the document.
 
 ``manuels(optionflags=0, checker=None)``
   Return a ``manuel`` parser for Python, Javascript and capture.
