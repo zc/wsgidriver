@@ -19,7 +19,7 @@ def blank(title='test title', content='test content'):
         body="<body>%s</body>" % content
         )
 
-@bobo.query("/test.js")
+@bobo.query("/test.js", content_type="application/javascript")
 def js():
     return 'wsgidriver_z = 3'
 
