@@ -5,7 +5,10 @@ This package provides some helpers for testing Javascript (and
 optionally WSGI) applications using Python, Selenium Webdriver,
 Manuel, and WSGI.
 
-- doctest ``setUp`` function that:
+The package provides thge following functions:
+
+``setUp(test, app)``
+  a doctest ``setUp`` function that:
 
   - Sets up a webdriver, available as a ``browser`` variable.
 
@@ -50,12 +53,35 @@ Manuel, and WSGI.
     ``js>`` examples
         for evaluating Javascript expressions in the browser.
 
+        IMPORTANT NOTE
+          This should only be used with expressions.  Using with
+          multiple statements is likely to produce errors or strange
+          results. This works by simply taking the source provides,
+          jamming a ``return`` on the front of it and calling the
+          Webdriver ``execute_script`` method.
+
     ``js!`` examples
         for executing Javascript code in the browser without returning
-        anything.
+        anything.  This works find with blocks of code.  The source
+        given is passed to the Webdriver ``execute_script`` method.
 
-    These are doctest syntactic sugar for the Webdriver
-    ``execute_script`` function.
+        IMPORTANT NOTE
+          Functions defined in the source using ``function`` statements
+          aren't in the Javascript global scope.  To define global
+          functions, use something like::
+
+            global_name = function () {...}
+
+    You can also execute Javascript code from Python examples using
+    the Webdriver (``browser``) ``execute_script`` method.  When
+    invoking Javascript this way, be aware of the following oddities:
+
+    - Functions defined via ``function`` statements can be used within
+      the block of code, but aren't gloval.  To define a global
+      function, assign an anonymouse function to a global variable.
+
+    - No value is returned unless the block of code includes a return
+      statement.
 
   - Includes the ``wait`` function ``from zope.testing.wait`` that
     waits for a condition.
@@ -63,67 +89,61 @@ Manuel, and WSGI.
   The function takes an additional argument (after the test argument),
   named ``app`` that provides a WSGI application object.
 
-- A ``start_server`` function that can be used to run the test
-  server without running tests.
+``start_server(app, port=0, daemon=True)``
+  A function that can be used to run the test server without running tests.
 
-  start_server(app, port=0, daemon=True)
+  Arguments:
 
-    Start a bobo server.
+  ``app``
+     A WSGI application object
 
-    Arguments:
+  ``port``
+     The port to listen on. If 0, the default, then the port so
+     allocated dynamically and returned.
 
-    app
-       A WSGI application object
+  ``daemon``
+     The daemon mode.  This can be ``True``, ``False``, or ``None``.
 
-    port
-       The port to listen on. If 0, the default, then the port so
-       allocated dynamically and returned.
+     If ``None``, then the server is run in the foureground and blocks
+     the caller.
 
-    daemon
-       The daemon mode.  This can be ``True``, ``False``, or ``None``.
+     If ``True`` or ``False``, the server is run in a thread, who's
+     deamon mode is set to the value of this parameter.
 
-       If ``None``, then the server is run in the foureground and blocks
-       the caller.
 
-       If ``True`` or ``False``, the server is run in a thread, who's
-       deamon mode is set to the value of this parameter.
+``html(css=(), scripts=(), title="test", body="<body></body>")``
+   Return an HTML page with CSS links, script tags, and the given
+   title and body tags.
 
-- A ``html`` method that returns a mostly empty page to be
-  painted by Javascript:
+   This is handy when you want a mostly empty HTML page that loads
+   Javascript to be tested.
 
-  html(css=(), scripts=(), title="test", body="<body></body>")
-     Return an HTML page with CSS links, script tags, and the given
-     title and body tags.
+   ``css``
+     An iterable of CSS URLs.
 
-     css
-       An iterable of CSS URLs.
+   ``scripts``
+     An iterable of script definitions.
 
-     scripts
-       An iterable of script definitions.
+     Each definition is one of:
 
-       Each definition is one of:
+     - script URL
 
-       - script URL
+     - script tag (starting wth '<')
 
-       - script tag (starting wth '<')
+     - script Javascript source (containing at least one newline
+       character)
 
-       - script Javascript source (containing at least one newline
-         character)
+   ``title``
+      The contents of the page title
 
-     title
-        The contents of the page title
+   ``body``
+      The body of teh document.
 
-     body
-        The body of teh document.
+``manuels(optionflags=0, checker=None)``
+  Return a ``manuel`` parser for Python, Javascript and capture.
 
-- A ``manuels`` function that returns a ``manuel`` parser, created by
-  combining Python and Javascript syntax doctest parsers and a capture
-  parser.
-
-  manuels(optionflags=0, checker=None)
-    Return a ``manuel`` parser for Python, Javascript and capture.
-
-- A ``TestSuite`` function that takes one or more doctest/manuel file names
+``TestSuite(*tests, **options)``
+  A function that takes one or more doctest/manuel file names
   and Test flags, such as ``setUp``, ``tearDown``, ``optionflags``,
   and ``checker``, and returns a doctest test suite.
 
