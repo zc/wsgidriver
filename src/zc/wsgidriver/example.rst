@@ -4,11 +4,11 @@ test app.
 It gives a simple example of using the testing infrastructure::
 
     >>> browser.get(server)
-    >>> print browser.page_source
-    <!DOCTYPE html><html><head>
+    >>> print browser.page_source # doctest: +ELLIPSIS
+    <!DOCTYPE html>...
       <title>test title</title>
     <BLANKLINE>
-      <link rel="stylesheet" type="text/css" href="/test.css">
+      <link...href="/test.css"...
     <BLANKLINE>
     <BLANKLINE>
       <script type="text/javascript">
