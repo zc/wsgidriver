@@ -205,7 +205,7 @@ def manuels(optionflags=0, checker=None):
 def _manuels(optionflags=0, checker=None, **kw):
     return manuels(optionflags, checker), kw
 
-def TestSuite(*a, **kw):
+def TestSuite(*test_names, **kw):
     manuels, kw = _manuels(**kw)
 
     if 'app' in kw:
@@ -214,4 +214,9 @@ def TestSuite(*a, **kw):
         app = kw.pop('app')
         kw['setUp'] = lambda test: setUp(test, app)
         kw['tearDown'] = tearDown
-    return manuel.testing.TestSuite(manuels, *a, **kw)
+
+    base = os.path.dirname(sys._getframe(1).f_globals['__file__'])
+    return manuel.testing.TestSuite(
+        manuels,
+        *[os.path.join(base, name) for name in test_names],
+        **kw)
