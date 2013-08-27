@@ -38,5 +38,6 @@ setup(
     install_requires = install_requires,
     zip_safe = False,
     entry_points=entry_points,
+    extras_require = extras_require,
     package_data = {name: ['*.rst', '*.txt', '*.test', '*.html']},
     )
