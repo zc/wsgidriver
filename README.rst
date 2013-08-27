@@ -18,13 +18,16 @@ The package provides thge following functions:
     1. Define a driver in a ``SELENIUM_DRIVER`` environment variable,
        or
 
-    2. In your test script, call the function
-       ``zc.bobodriver.get_factory_argument(argv=sys.argv, option='-b')``
-       to parse arguments for a
-       ``-b`` option, typically before calling whatever logic normally
-       parses arguments.
+    2. In your test script, call the function ``get_factory_argument``
+       to parse arguments for a ``-b`` option, typically before
+       calling whatever logic normally parses arguments.
 
        The value of this option is a driver definition.
+
+       The function definition:
+
+       ``get_factory_argument(argv=sys.argv, option='-b')``
+           Parse arguments for a browser definition.
 
     A driver definition can be one of the driver names, ``chrome``
     ``firefox``, ``ie``, ``opera``, or ``phantomjs``.  It can also be
