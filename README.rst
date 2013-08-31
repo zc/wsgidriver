@@ -158,7 +158,7 @@ See the example test included with the package.
 Changes
 *******
 
-0.1.0 (yyyy-mm-dd)
+0.1.0 (2013-08-31)
 ==================
 
 Initial release

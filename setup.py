@@ -11,7 +11,7 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-name, version = 'zc.wsgidriver', '0'
+name, version = 'zc.wsgidriver', '0.1.0'
 
 install_requires = ['setuptools', 'manuel', 'zope.testing',
                     'selenium', 'zc.customdoctests']
