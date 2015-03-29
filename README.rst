@@ -34,13 +34,16 @@ The package provides the following functions:
     a remote driver specification.  A remote driver specification is
     of the form::
 
-      browserName,version,platform,command_executor
+      browserName,[version[[,command_executor],platform]]
+
+    Square bases indicate optional items, and the order of parsing
+    (which is a bit strange).
 
     For example:
 
       internet explorer,10,Windows 8
 
-    Items on the right can be omitted.  In the example above, we've
+    In the example above, we've
     left off the command executor.  If the command executor isn't
     provided as part of the option, it must be provided via the
     ``SELENIUM_REMOTE_COMMAND_EXECUTOR`` environment variable.
